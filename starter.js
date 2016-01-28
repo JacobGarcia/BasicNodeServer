@@ -16,7 +16,7 @@ function control(request, response) {
             
         });
         request.on('end', function(data){
-             response.writeHead(200, {'Content-Type': 'text/html'});
+             response.writeHead(200, {'content-type': 'text/html'});
         })
     }
 
@@ -33,9 +33,11 @@ function control(request, response) {
         else
             renderhtml.render(request, response, file);
 
-    } else if (vars.pathname.indexOf(".") != -1) {
+    } else if (vars.pathname.indexOf(".") != -1) { /* Images rendering */
+        var path = vars.pathname.split(".");
+        var extension = path[path.length - 1];
         response.writeHead(200, {
-            'content-type': 'image/png'
+            'content-type': 'image/' + extension
         });
         var img = fs.readFileSync("." + vars.pathname);
         response.end(img, 'binary')
