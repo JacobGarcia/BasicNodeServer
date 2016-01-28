@@ -2,12 +2,12 @@ var http = require('http');
 var url = require('url');
 var index = require('./index');
 var fs = require('fs');
+var renderhtml =  require('./renderhtml');
 
 var server = http.createServer();
 
 function control(request, response) {
     var vars = url.parse(request.url);
-    console.log(vars.pathname);
     
     if(request.method === 'POST'){
         var requestBody = "";
@@ -20,25 +20,27 @@ function control(request, response) {
         })
     }
 
-    if (vars.pathname == "/index.html" || vars.pathname == "/") {
-
+    if (vars.pathname.indexOf(".html") != -1 || vars.pathname == "/") {
+        console.log(vars.pathname);
         response.writeHead(200, {
             'content-type': 'text/html'
         });
-        index.render(request, response);
+        var path = vars.pathname.split("/");
+        var file = path[path.length - 1];
+        
+        if(file == "index.html" || vars.pathname == "/")
+            index.render(request, response);
+        else
+            renderhtml.render(request, response, file);
 
-    } else if (vars.pathname.indexOf(".png") != -1) {
+    } else if (vars.pathname.indexOf(".") != -1) {
         response.writeHead(200, {
             'content-type': 'image/png'
         });
         var img = fs.readFileSync("." + vars.pathname);
         response.end(img, 'binary')
     } else {
-        response.writeHead(404, {
-            'content-type': 'text/html'
-        });
-        response.write("<html>The specified resource was not found</html>");
-        response.end();
+        renderhtml.notFound(response);
     }
 }
 
